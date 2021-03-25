@@ -1,0 +1,12 @@
+name: 'RoamJS Publish'
+description: 'GitHub Action for publishing extensions to RoamJS'
+inputs:
+  token:
+    description: 'Your RoamJS Developer Token'
+    required: true
+  path:
+    description: 'The RoamJS path to deploy to'
+    required: true
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
