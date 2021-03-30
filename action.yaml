@@ -4,9 +4,13 @@ inputs:
   token:
     description: 'Your RoamJS Developer Token'
     required: true
+  source:
+    description: 'The directory to deploy from'
+    required: true
   path:
     description: 'The RoamJS path to deploy to'
-    required: true
+    required: false
+    default: ''
 runs:
   using: 'node12'
   main: 'dist/index.js'
