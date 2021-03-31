@@ -20,12 +20,12 @@ You will first need to create an account on [RoamJS](https://roamjs.com). On you
 
 ### `path`
 
-**Required** The RoamJS path to deploy files to
+**Optional** The RoamJS path to deploy files to. If you requested a subpath from RoamJS, specify this input without the trailing `/`. If you requested `.js` files to be added to the RoamJS root, do not specify this input.
 
 ## Usage
 
 ```yaml
-uses: dvargas92495/roamjs-publish@0.1.0
+uses: dvargas92495/roamjs-publish@0.1.2
 with:
     token: ${{ secrets.ROAMJS_DEVELOPER_TOKEN }}
     source: dist
