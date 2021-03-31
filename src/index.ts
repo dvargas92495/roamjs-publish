@@ -52,7 +52,7 @@ const runAll = (): Promise<number> => {
               Body: fs.createReadStream(path.join(sourcePath, p)),
             })
             .promise()
-            .then(() => `${destPath}/${p}`)
+            .then(() => `/${destPath}/${p}`)
         )
       ).then((Items) =>
         cloudfront.createInvalidation({
