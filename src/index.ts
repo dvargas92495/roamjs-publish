@@ -22,7 +22,7 @@ const readDir = (s: string): string[] =>
   fs
     .readdirSync(s, { withFileTypes: true })
     .filter((f) => !EXCLUSIONS.has(f.name.split("/").slice(-1)[0]))
-    .flatMap((f) => (f.isDirectory() ? readDir(f.name) : [f.name]));
+    .flatMap((f) => (f.isDirectory() ? readDir(path.join(s, f.name)) : [f.name]));
 
 const runAll = (): Promise<number> => {
   const Authorization = getInput("token");
