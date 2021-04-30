@@ -20,9 +20,12 @@ const runAll = (): Promise<number> => {
   const fileNames = fs.readdirSync(sourcePath);
   if (fileNames.length > 100) {
     return Promise.reject(
-      new Error(`Attempting to upload too many files from ${sourcePath}. Max: 100, Actual: ${fileNames.length}`)
+      new Error(
+        `Attempting to upload too many files from ${sourcePath}. Max: 100, Actual: ${fileNames.length}`
+      )
     );
   }
+  info(`Preparing to publish ${fileNames.length} files to RoamJS`);
   const destPath = getInput("path");
   return axios
     .post<{ credentials: Credentials; distributionId: string }>(
@@ -45,29 +48,34 @@ const runAll = (): Promise<number> => {
         credentials,
       });
       return Promise.all(
-        fileNames.map((p) =>
-          s3
+        fileNames.map((p) => {
+          const fileName = path.join(sourcePath, p);
+          info(`Uploading ${fileName}...`);
+          return s3
             .upload({
               Bucket: "roamjs.com",
               Key: `${destPath}/${p}`,
-              Body: fs.createReadStream(path.join(sourcePath, p)),
+              Body: fs.createReadStream(fileName),
             })
             .promise()
-            .then(() => `/${destPath}/${p}`)
-        )
+            .then(() => `/${destPath}/${p}`);
+        })
       ).then((Items) =>
-        cloudfront.createInvalidation({
-          DistributionId: r.data.distributionId,
-          InvalidationBatch: {
-            CallerReference: new Date().toJSON(),
-            Paths: {
-              Quantity: Items.length,
-              Items,
+        cloudfront
+          .createInvalidation({
+            DistributionId: r.data.distributionId,
+            InvalidationBatch: {
+              CallerReference: new Date().toJSON(),
+              Paths: {
+                Quantity: Items.length,
+                Items,
+              },
             },
-          },
-        }).promise().then(() => Items.length)
+          })
+          .promise()
+          .then(() => Items.length)
       );
-    })
+    });
 };
 
 if (process.env.NODE_ENV !== "test") {
