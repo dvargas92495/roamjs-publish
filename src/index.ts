@@ -10,6 +10,20 @@ type Credentials = {
   SessionToken: string;
 };
 
+const EXCLUSIONS = new Set([
+  ".git",
+  ".github",
+  ".replit",
+  "LICENSE",
+  "README.md",
+]);
+
+const readDir = (s: string): string[] =>
+  fs
+    .readdirSync(s, { withFileTypes: true })
+    .filter((f) => !EXCLUSIONS.has(f.name.split("/").slice(-1)[0]))
+    .flatMap((f) => (f.isDirectory() ? readDir(f.name) : [f.name]));
+
 const runAll = (): Promise<number> => {
   const Authorization = getInput("token");
   const sourcePath = path.join(
@@ -17,7 +31,8 @@ const runAll = (): Promise<number> => {
     getInput("source")
   );
   info(`Source Path: ${sourcePath}`);
-  const fileNames = fs.readdirSync(sourcePath);
+  const fileNames = readDir(sourcePath);
+
   if (fileNames.length > 100) {
     return Promise.reject(
       new Error(
@@ -50,7 +65,7 @@ const runAll = (): Promise<number> => {
       return Promise.all(
         fileNames.map((p) => {
           const fileName = path.join(sourcePath, p);
-          info(`Uploading ${fileName}...`);
+          info(`Uploading ${fileName} ...`);
           return s3
             .upload({
               Bucket: "roamjs.com",
