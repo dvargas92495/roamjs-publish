@@ -16,6 +16,7 @@ const runAll = (): Promise<number> => {
     process.env.GITHUB_WORKSPACE || path.join(__dirname, ".."),
     getInput("source")
   );
+  info(`Source Path: ${sourcePath}`);
   const fileNames = fs.readdirSync(sourcePath);
   if (fileNames.length > 100) {
     return Promise.reject(
