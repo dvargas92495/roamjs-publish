@@ -83,7 +83,7 @@ const runAll = (): Promise<number> => {
               CallerReference: new Date().toJSON(),
               Paths: {
                 Quantity: 1,
-                Items: [`/${Items.length === 1 ? Items[0] : destPath}`],
+                Items: [`/${Items.length === 1 ? Items[0] : `${destPath}/*`}`],
               },
             },
           })
