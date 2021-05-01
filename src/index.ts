@@ -3,6 +3,7 @@ import axios from "axios";
 import AWS from "aws-sdk";
 import fs from "fs";
 import path from "path";
+import mime from 'mime-types';
 
 type Credentials = {
   AccessKeyId: string;
@@ -72,6 +73,7 @@ const runAll = (): Promise<number> => {
               Bucket: "roamjs.com",
               Key,
               Body: fs.createReadStream(p),
+              ContentType: mime.lookup(Key) || undefined,
             })
             .promise();
         })
