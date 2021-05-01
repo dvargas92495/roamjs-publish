@@ -73,8 +73,7 @@ const runAll = (): Promise<number> => {
               Key,
               Body: fs.createReadStream(p),
             })
-            .promise()
-            .then(() => `/${destPath}/${p}`);
+            .promise();
         })
       ).then((Items) =>
         cloudfront
@@ -83,8 +82,8 @@ const runAll = (): Promise<number> => {
             InvalidationBatch: {
               CallerReference: new Date().toJSON(),
               Paths: {
-                Quantity: Items.length,
-                Items,
+                Quantity: 1,
+                Items: [`/${Items.length === 1 ? Items[0] : destPath}`],
               },
             },
           })
