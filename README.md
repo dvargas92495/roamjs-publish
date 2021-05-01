@@ -25,7 +25,7 @@ You will first need to create an account on [RoamJS](https://roamjs.com). On you
 ## Usage
 
 ```yaml
-uses: dvargas92495/roamjs-publish@0.1.7
+uses: dvargas92495/roamjs-publish@0.1.9
 with:
     token: ${{ secrets.ROAMJS_DEVELOPER_TOKEN }}
     source: dist

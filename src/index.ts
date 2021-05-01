@@ -22,7 +22,7 @@ const readDir = (s: string): string[] =>
   fs
     .readdirSync(s, { withFileTypes: true })
     .filter((f) => !EXCLUSIONS.has(f.name.split("/").slice(-1)[0]))
-    .flatMap((f) => (f.isDirectory() ? readDir(path.join(s, f.name)) : [f.name]));
+    .flatMap((f) => (f.isDirectory() ? readDir(path.join(s, f.name)) : [path.join(s, f.name)]));
 
 const runAll = (): Promise<number> => {
   const Authorization = getInput("token");
@@ -64,13 +64,14 @@ const runAll = (): Promise<number> => {
       });
       return Promise.all(
         fileNames.map((p) => {
-          const fileName = path.join(sourcePath, p);
-          info(`Uploading ${fileName} ...`);
+          const fileName = p.substring(sourcePath.length);
+          const Key = `${destPath}${fileName}`;
+          info(`Uploading ${p} to ${Key}...`);
           return s3
             .upload({
               Bucket: "roamjs.com",
-              Key: `${destPath}/${p}`,
-              Body: fs.createReadStream(fileName),
+              Key,
+              Body: fs.createReadStream(p),
             })
             .promise()
             .then(() => `/${destPath}/${p}`);
