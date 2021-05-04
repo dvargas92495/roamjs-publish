@@ -1,9 +1,9 @@
-import { getInput, info, setFailed } from "@actions/core";
+import { getInput, info, setFailed, warning } from "@actions/core";
 import axios from "axios";
 import AWS from "aws-sdk";
 import fs from "fs";
 import path from "path";
-import mime from 'mime-types';
+import mime from "mime-types";
 
 type Credentials = {
   AccessKeyId: string;
@@ -23,7 +23,11 @@ const readDir = (s: string): string[] =>
   fs
     .readdirSync(s, { withFileTypes: true })
     .filter((f) => !EXCLUSIONS.has(f.name.split("/").slice(-1)[0]))
-    .flatMap((f) => (f.isDirectory() ? readDir(path.join(s, f.name)) : [path.join(s, f.name)]));
+    .flatMap((f) =>
+      f.isDirectory() ? readDir(path.join(s, f.name)) : [path.join(s, f.name)]
+    );
+
+const toDoubleDigit = (n: number) => n.toString().padStart(2, "0");
 
 const runAll = (): Promise<number> => {
   const Authorization = getInput("token");
@@ -42,11 +46,15 @@ const runAll = (): Promise<number> => {
     );
   }
   info(`Preparing to publish ${fileNames.length} files to RoamJS`);
-  const destPath = getInput("path");
+  const destPathInput = getInput("path");
+  if (destPathInput.endsWith("/")) {
+    warning("No need to put an ending slash on the `path` input");
+  }
+  const destPath = destPathInput.replace(/\/$/, "");
   return axios
     .post<{ credentials: Credentials; distributionId: string }>(
       "https://api.roamjs.com/publish",
-      {},
+      { path: destPath },
       { headers: { Authorization } }
     )
     .then((r) => {
@@ -63,19 +71,36 @@ const runAll = (): Promise<number> => {
         apiVersion: "2020-05-31",
         credentials,
       });
+      const today = new Date();
+      const version = `${today.getFullYear()}-${toDoubleDigit(
+        today.getMonth() + 1
+      )}-${toDoubleDigit(today.getDate())}-${toDoubleDigit(
+        today.getHours()
+      )}-${toDoubleDigit(today.getMinutes())}`;
       return Promise.all(
         fileNames.map((p) => {
           const fileName = p.substring(sourcePath.length);
           const Key = `${destPath}${fileName}`;
-          info(`Uploading ${p} to ${Key}...`);
+          const uploadProps = {
+            Bucket: "roamjs.com",
+            Body: fs.createReadStream(p),
+            ContentType: mime.lookup(fileName) || undefined,
+          };
+          info(`Uploading version ${version} of ${p} to ${Key}...`);
           return s3
             .upload({
-              Bucket: "roamjs.com",
-              Key,
-              Body: fs.createReadStream(p),
-              ContentType: mime.lookup(Key) || undefined,
+              Key: `${destPath}/${version}${fileName}`,
+              ...uploadProps,
             })
-            .promise();
+            .promise()
+            .then(() =>
+              s3
+                .upload({
+                  Key,
+                  ...uploadProps,
+                })
+                .promise()
+            );
         })
       ).then((Items) =>
         cloudfront
@@ -85,7 +110,7 @@ const runAll = (): Promise<number> => {
               CallerReference: new Date().toJSON(),
               Paths: {
                 Quantity: 1,
-                Items: [`/${Items.length === 1 ? Items[0] : `${destPath}/*`}`],
+                Items: [`/${destPath}/*`],
               },
             },
           })

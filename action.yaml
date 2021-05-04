@@ -9,8 +9,7 @@ inputs:
     required: true
   path:
     description: 'The RoamJS path to deploy to'
-    required: false
-    default: ''
+    required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -4,9 +4,9 @@ A GitHub Action for allowing other developers to publish extensions to RoamJS.
 
 ## Prerequistes
 
-You will first need to create an account on [RoamJS](https://roamjs.com). On your user page, click the developer token. Click the generate new token button, then request the path you'd like to deploy to. The path must be one of two formats:
-- To claim a RoamJS subpath to deploy multiple files to, it must end in a `/`. For example, enter `foo/` to claim `https://roamjs.com/foo/index.js` and `https://roamjs.com/foo/other.js`.
-- To claim a single file at RoamJS' root, it must end in a `.js`. For example, enter `foo.js` to claim `https://roamjs.com/foo.js`.
+You will first need to create an account on [RoamJS](https://roamjs.com). You will then need to subscribe to the [developer service](https://roamjs.com/services/developer). Copy the extension to your Roam DB and you will be taken to the `roam/js/developer` page upon installation. This will serve as your developer dashboard going forward.
+
+To claim a RoamJS subpath, input a value and click `Request Path`. For example, enter `foo` to claim `https://roamjs.com/foo/*`. This will give you access to upload all content required by your extension to that path.
 
 ## Inputs
 
@@ -20,12 +20,12 @@ You will first need to create an account on [RoamJS](https://roamjs.com). On you
 
 ### `path`
 
-**Optional** The RoamJS path to deploy files to. If you requested a subpath from RoamJS, specify this input without the trailing `/`. If you requested `.js` files to be added to the RoamJS root, do not specify this input.
+**Optional** The RoamJS path to deploy files to.
 
 ## Usage
 
 ```yaml
-uses: dvargas92495/roamjs-publish@0.1.12
+uses: dvargas92495/roamjs-publish@0.1.13
 with:
     token: ${{ secrets.ROAMJS_DEVELOPER_TOKEN }}
     source: dist
