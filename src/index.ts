@@ -45,12 +45,12 @@ const runAll = (): Promise<number> => {
       )
     );
   }
-  info(`Preparing to publish ${fileNames.length} files to RoamJS`);
   const destPathInput = getInput("path");
   if (destPathInput.endsWith("/")) {
     warning("No need to put an ending slash on the `path` input");
   }
   const destPath = destPathInput.replace(/\/$/, "");
+  info(`Preparing to publish ${fileNames.length} files to RoamJS destination ${destPath}`);
   return axios
     .post<{ credentials: Credentials; distributionId: string }>(
       "https://api.roamjs.com/publish",

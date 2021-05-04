@@ -25,7 +25,7 @@ To claim a RoamJS subpath, input a value and click `Request Path`. For example, 
 ## Usage
 
 ```yaml
-uses: dvargas92495/roamjs-publish@0.1.13
+uses: dvargas92495/roamjs-publish@0.1.14
 with:
     token: ${{ secrets.ROAMJS_DEVELOPER_TOKEN }}
     source: dist
