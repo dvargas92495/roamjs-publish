@@ -85,7 +85,6 @@ const runAll = (): Promise<number> => {
           const Key = `${destPath}${fileName}`;
           const uploadProps = {
             Bucket: "roamjs.com",
-            Body: fs.createReadStream(p),
             ContentType: mime.lookup(fileName) || undefined,
           };
           info(`Uploading version ${version} of ${p} to ${Key}...`);
@@ -94,12 +93,14 @@ const runAll = (): Promise<number> => {
               .upload({
                 Key: `${destPath}/${version}${fileName}`,
                 ...uploadProps,
+                Body: fs.createReadStream(p),
               })
               .promise(),
             s3
               .upload({
                 Key,
                 ...uploadProps,
+                Body: fs.createReadStream(p),
               })
               .promise(),
           ];
