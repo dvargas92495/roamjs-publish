@@ -22,6 +22,7 @@
     "mime-types": "^2.1.30"
   },
   "devDependencies": {
+    "@octokit/webhooks-types": "^3.72.0",
     "@types/jest": "^26.0.19",
     "@types/mime-types": "^2.1.0",
     "@typescript-eslint/eslint-plugin": "^4.10.0",

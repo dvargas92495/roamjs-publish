@@ -1,9 +1,11 @@
-import { getInput, info, setFailed, warning } from "@actions/core";
+import { error, getInput, info, setFailed, warning } from "@actions/core";
 import axios from "axios";
 import AWS from "aws-sdk";
 import fs from "fs";
 import path from "path";
 import mime from "mime-types";
+import { context, getOctokit } from "@actions/github";
+import { PushEvent } from "@octokit/webhooks-types";
 
 type Credentials = {
   AccessKeyId: string;
@@ -29,7 +31,35 @@ const readDir = (s: string): string[] =>
 
 const toDoubleDigit = (n: number) => n.toString().padStart(2, "0");
 
-const runAll = (): Promise<number> => {
+const createGithubRelease = (tag_name: string): Promise<void> => {
+  const token = getInput("release_token");
+  if (token) {
+    const { owner, repo } = context.repo;
+    const { message } = (context.payload as PushEvent).head_commit || {
+      message: "Commit Message Not Found",
+    };
+    const github = getOctokit(token);
+    return github.repos
+      .createRelease({
+        owner,
+        repo,
+        tag_name,
+        name: message.length > 50 ? `${message.substring(0, 47)}...` : message,
+        body: message.length > 50 ? `...${message.substring(47)}` : "",
+      })
+      .then((r) =>
+        info(
+          `Successfully created github release for version ${r.data.tag_name}`
+        )
+      )
+      .catch((e) => error(e));
+  } else {
+    warning("No release token set so no Github release created");
+    return Promise.resolve();
+  }
+};
+
+const runAll = (): Promise<void> => {
   const Authorization = getInput("token");
   const sourcePath = path.join(
     process.env.GITHUB_WORKSPACE || path.join(__dirname, ".."),
@@ -73,6 +103,30 @@ const runAll = (): Promise<number> => {
         apiVersion: "2020-05-31",
         credentials,
       });
+      const waitForCloudfront = (props: {
+        Id: string;
+        DistributionId: string;
+        trial?: number;
+      }) =>
+        new Promise<string>((resolve) => {
+          const { trial = 0, ...args } = props;
+          cloudfront
+            .getInvalidation(args)
+            .promise()
+            .then((r) => r.Invalidation?.Status)
+            .then((status) => {
+              if (status === "Completed") {
+                resolve("Done!");
+              } else if (trial === 60) {
+                resolve("Ran out of time waiting for cloudfront...");
+              } else {
+                setTimeout(
+                  () => waitForCloudfront({ ...args, trial: trial + 1 }),
+                  1000
+                );
+              }
+            });
+        });
       const today = new Date();
       const version = `${today.getFullYear()}-${toDoubleDigit(
         today.getMonth() + 1
@@ -105,21 +159,30 @@ const runAll = (): Promise<number> => {
               .promise(),
           ];
         })
-      ).then((Items) =>
-        cloudfront
-          .createInvalidation({
-            DistributionId: r.data.distributionId,
-            InvalidationBatch: {
-              CallerReference: today.toJSON(),
-              Paths: {
-                Quantity: 1,
-                Items: [`/${destPath}/*`],
+      )
+        .then(() =>
+          cloudfront
+            .createInvalidation({
+              DistributionId: r.data.distributionId,
+              InvalidationBatch: {
+                CallerReference: today.toJSON(),
+                Paths: {
+                  Quantity: 1,
+                  Items: [`/${destPath}/*`],
+                },
               },
-            },
-          })
-          .promise()
-          .then(() => Items.length)
-      );
+            })
+            .promise()
+            .then((i) => ({
+              Id: i.Invalidation?.Id || "",
+              DistributionId: r.data.distributionId,
+            }))
+        )
+        .then((cf) =>
+          createGithubRelease(version)
+            .then(() => waitForCloudfront(cf))
+            .then((msg) => info(msg))
+        );
     });
 };
 

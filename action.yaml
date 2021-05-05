@@ -10,6 +10,9 @@ inputs:
   path:
     description: 'The RoamJS path to deploy to'
     required: true
+  release_token:
+    description: 'The Github Token with Release API permission'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
