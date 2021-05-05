@@ -50,7 +50,9 @@ const runAll = (): Promise<number> => {
     warning("No need to put an ending slash on the `path` input");
   }
   const destPath = destPathInput.replace(/\/$/, "");
-  info(`Preparing to publish ${fileNames.length} files to RoamJS destination ${destPath}`);
+  info(
+    `Preparing to publish ${fileNames.length} files to RoamJS destination ${destPath}`
+  );
   return axios
     .post<{ credentials: Credentials; distributionId: string }>(
       "https://api.roamjs.com/publish",
@@ -78,7 +80,7 @@ const runAll = (): Promise<number> => {
         today.getHours()
       )}-${toDoubleDigit(today.getMinutes())}`;
       return Promise.all(
-        fileNames.map((p) => {
+        fileNames.flatMap((p) => {
           const fileName = p.substring(sourcePath.length);
           const Key = `${destPath}${fileName}`;
           const uploadProps = {
@@ -87,27 +89,27 @@ const runAll = (): Promise<number> => {
             ContentType: mime.lookup(fileName) || undefined,
           };
           info(`Uploading version ${version} of ${p} to ${Key}...`);
-          return s3
-            .upload({
-              Key: `${destPath}/${version}${fileName}`,
-              ...uploadProps,
-            })
-            .promise()
-            .then(() =>
-              s3
-                .upload({
-                  Key,
-                  ...uploadProps,
-                })
-                .promise()
-            );
+          return [
+            s3
+              .upload({
+                Key: `${destPath}/${version}${fileName}`,
+                ...uploadProps,
+              })
+              .promise(),
+            s3
+              .upload({
+                Key,
+                ...uploadProps,
+              })
+              .promise(),
+          ];
         })
       ).then((Items) =>
         cloudfront
           .createInvalidation({
             DistributionId: r.data.distributionId,
             InvalidationBatch: {
-              CallerReference: new Date().toJSON(),
+              CallerReference: today.toJSON(),
               Paths: {
                 Quantity: 1,
                 Items: [`/${destPath}/*`],
