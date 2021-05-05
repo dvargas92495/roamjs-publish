@@ -20,12 +20,16 @@ To claim a RoamJS subpath, input a value and click `Request Path`. For example, 
 
 ### `path`
 
-**Optional** The RoamJS path to deploy files to.
+**Required** The RoamJS path to deploy files to.
+
+### `release_token`
+
+**Optional** The Github Token with release API permission. If specified, github releases will be auto generated on publish.
 
 ## Usage
 
 ```yaml
-uses: dvargas92495/roamjs-publish@0.1.16
+uses: dvargas92495/roamjs-publish@0.2.0
 with:
     token: ${{ secrets.ROAMJS_DEVELOPER_TOKEN }}
     source: dist
