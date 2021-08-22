@@ -167,8 +167,8 @@ const runAll = (): Promise<void> => {
               InvalidationBatch: {
                 CallerReference: today.toJSON(),
                 Paths: {
-                  Quantity: 1,
-                  Items: [`/${destPath}/*`],
+                  Quantity: 2,
+                  Items: [`/${destPath}/*`, `/${destPath}.js`],
                 },
               },
             })
