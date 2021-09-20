@@ -141,7 +141,7 @@ const runAll = (): Promise<void> => {
             Bucket: "roamjs.com",
             ContentType: mime.lookup(fileName) || undefined,
           };
-          const Body = fs
+          const jsBody = fs
             .readFileSync(p)
             .toString()
             .replace(/[a-z]*\.env\.ROAMJS_VERSION/g, `"${version}"`);
@@ -151,14 +151,20 @@ const runAll = (): Promise<void> => {
               .upload({
                 Key: `${destPath}/${version}${fileName}`,
                 ...uploadProps,
-                Body,
+                Body:
+                  uploadProps.ContentType === "text/javascript"
+                    ? jsBody
+                    : fs.createReadStream(p),
               })
               .promise(),
             s3
               .upload({
                 Key,
                 ...uploadProps,
-                Body,
+                Body:
+                  uploadProps.ContentType === "text/javascript"
+                    ? jsBody
+                    : fs.createReadStream(p),
               })
               .promise(),
           ];
