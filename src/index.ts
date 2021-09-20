@@ -152,7 +152,7 @@ const runAll = (): Promise<void> => {
                 Key: `${destPath}/${version}${fileName}`,
                 ...uploadProps,
                 Body:
-                  uploadProps.ContentType === "text/javascript"
+                  uploadProps.ContentType === "application/javascript"
                     ? jsBody
                     : fs.createReadStream(p),
               })
@@ -162,7 +162,7 @@ const runAll = (): Promise<void> => {
                 Key,
                 ...uploadProps,
                 Body:
-                  uploadProps.ContentType === "text/javascript"
+                  uploadProps.ContentType === "application/javascript"
                     ? jsBody
                     : fs.createReadStream(p),
               })
