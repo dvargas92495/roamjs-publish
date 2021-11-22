@@ -76,10 +76,15 @@ const runAll = (): Promise<void> => {
     );
   }
   const destPathInput = getInput("path");
+  const branchInput = getInput("branch");
   if (destPathInput.endsWith("/")) {
     warning("No need to put an ending slash on the `path` input");
   }
-  const destPath = destPathInput.replace(/\/$/, "");
+  const destPath = `${destPathInput.replace(/\/$/, "")}${
+    branchInput && branchInput !== "main" && branchInput !== "master"
+      ? `/${branchInput}`
+      : ""
+  }`;
   info(
     `Preparing to publish ${fileNames.length} files to RoamJS destination ${destPath}`
   );

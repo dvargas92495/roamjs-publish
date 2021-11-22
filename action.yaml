@@ -13,6 +13,9 @@ inputs:
   release_token:
     description: 'The Github Token with Release API permission'
     required: false
+  branch:
+    descripton: 'The branch to deploy to'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
