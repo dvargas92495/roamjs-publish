@@ -16,6 +16,9 @@ inputs:
   branch:
     descripton: 'The branch to deploy to'
     required: false
+  email:
+    descripton: 'The email of the RoamJS user deploying. Required for latest token scheme'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
