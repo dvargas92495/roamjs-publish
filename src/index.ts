@@ -63,7 +63,7 @@ const runAll = (): Promise<void> => {
   const token = getInput("token");
   const email = getInput("email");
   const Authorization = email
-    ? `Bearer ${Buffer.from(`${email}:token`).toString("base64")}`
+    ? `Bearer ${Buffer.from(`${email}:${token}`).toString("base64")}`
     : token;
   const sourcePath = path.join(
     process.env.GITHUB_WORKSPACE || path.join(__dirname, ".."),
