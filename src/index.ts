@@ -153,7 +153,7 @@ const runAll = (): Promise<void> => {
           const jsBody = fs
             .readFileSync(p)
             .toString()
-            .replace(/[a-zA-Z]*\.env\.ROAMJS_VERSION/g, `"${version}"`);
+            .replace(/[a-zA-Z_]*\.env\.ROAMJS_VERSION/g, `"${version}"`);
           info(`Uploading version ${version} of ${p} to ${Key}...`);
           return [
             s3
