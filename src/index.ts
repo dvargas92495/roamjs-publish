@@ -6,6 +6,8 @@ import path from "path";
 import mime from "mime-types";
 import { context, getOctokit } from "@actions/github";
 import { PushEvent } from "@octokit/webhooks-types";
+import dotenv from "dotenv";
+dotenv.config();
 
 type Credentials = {
   AccessKeyId: string;
@@ -137,7 +139,7 @@ const runAll = (): Promise<void> => {
             });
         });
       const today = new Date();
-      const version = `${today.getFullYear()}-${toDoubleDigit(
+      const version = process.env.ROAMJS_VERSION || `${today.getFullYear()}-${toDoubleDigit(
         today.getMonth() + 1
       )}-${toDoubleDigit(today.getDate())}-${toDoubleDigit(
         today.getHours()
